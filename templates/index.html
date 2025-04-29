@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solr Search UI</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .filters div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 Solr Search UI</h1>
+
+  <div class="filters">
+    <div>
+      <label for="search-box">Search Title</label>
+      <input type="text" id="search-box" placeholder="Search titles...">
+    </div>
+
+    <div>
+      <label for="category-filter">Category</label>
+      <select id="category-filter">
+        <option value="">All</option>
+        <option value="java">Java</option>
+        <option value="solr">Solr</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="author-filter">Author</label>
+      <input type="text" id="author-filter" placeholder="Author name...">
+    </div>
+
+    <div>
+      <label for="published-filter">Published</label>
+      <select id="published-filter">
+        <option value="">All</option>
+        <option value="TRUE">Published</option>
+        <option value="FALSE">Unpublished</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="results" class="results"></div>
+
+  <script>
+    function fetchResults() {
+      const query = $('#search-box').val();
+      const category = $('#category-filter').val();
+      const author = $('#author-filter').val();
+      const published = $('#published-filter').val();
+
+      $.get('/search', { q: query, category, author, published }, function (data) {
+        const docs = data.response.docs;
+        $('#results').empty();
+        docs.forEach(doc => {
+          $('#results').append(`
+            <div class="card">
+              <h2>${doc.title}</h2>
+              <p>Author: ${doc.author}</p>
+              <p>Category: ${doc.category}</p>
+              <p>Published: ${doc.published}</p>
+            </div>
+          `);
+        });
+      });
+    }
+
+    $('#search-box').on('input', fetchResults);
+    $('#category-filter').on('change', fetchResults);
+    $('#author-filter').on('input', fetchResults);
+    $('#published-filter').on('change', fetchResults);
+
+    fetchResults(); // Initial load
+  </script>
+</body>
+</html>
